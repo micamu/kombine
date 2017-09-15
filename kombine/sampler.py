@@ -31,12 +31,15 @@ class _GetLnProbWrapper(object):
         Evaluate the log probability density of the stored target distribution fuction
         and KDE at `p`.
 
-        :param p: Location to evaluate probability densties at.
+        :param p:  Tuple with the ID number of the corresponing walker and the
+        location to evaluate probability densties at.
 
         :returns: ``lnpost(p)``, ``kde(p)``
         """
-        result = self.lnpost(p, *self.args)
-        kde = self.kde(p)
+        id, param = p[0], p[1]
+        print(id)
+        result = self.lnpost(param, id, *self.args)
+        kde = self.kde(param)
 
         # allow posterior function to optionally
         # return additional metadata
@@ -64,7 +67,7 @@ def _set_global_lnprob_wrapper(wrapper_instance):
     _lnprob_wrapper = wrapper_instance
 
 def _get_lnprob_from_wrapper(p):
-    return _lnprob_wrapper.lnprobs(p)
+    return _lnprob_wrapper.lnprobs(enumerate(p))
 
 def _update_wrapper_kde(kde):
     _lnprob_wrapper.update_kde(kde)
