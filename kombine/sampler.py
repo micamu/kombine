@@ -36,9 +36,8 @@ class _GetLnProbWrapper(object):
 
         :returns: ``lnpost(p)``, ``kde(p)``
         """
-        id, param = p[0], p[1]
-        print(id)
-        result = self.lnpost(param, id, *self.args)
+        walker_id, param = p[0], p[1]
+        result = self.lnpost(param, walker_id, *self.args)
         kde = self.kde(param)
 
         # allow posterior function to optionally
@@ -67,7 +66,7 @@ def _set_global_lnprob_wrapper(wrapper_instance):
     _lnprob_wrapper = wrapper_instance
 
 def _get_lnprob_from_wrapper(p):
-    return _lnprob_wrapper.lnprobs(enumerate(p))
+    return _lnprob_wrapper.lnprobs(p)
 
 def _update_wrapper_kde(kde):
     _lnprob_wrapper.update_kde(kde)
@@ -416,7 +415,7 @@ class Sampler(object):
         blob = blob0
 
         if lnpost is None or lnprop is None:
-            results = list(self._pool.map(self._get_wrapper(), p))
+            results = list(self._pool.map(self._get_wrapper(), enumerate(p)))
             lnpost = np.array([r[0] for r in results]) if lnpost is None else lnpost
             lnprop = np.array([r[1] for r in results]) if lnprop is None else lnprop
 
@@ -455,7 +454,7 @@ class Sampler(object):
                 # Calculate the posterior probability and proposal density
                 # at the proposed locations
                 try:
-                    results = list(self._pool.map(self._get_wrapper(), p_p))
+                    results = list(self._pool.map(self._get_wrapper(), enumerate(p_p)))
                     lnpost_p = np.array([r[0] for r in results])
                     lnprop_p = np.array([r[1] for r in results])
                     try:
@@ -543,7 +542,7 @@ class Sampler(object):
 
         pts = self.draw(ndraws)
 
-        results = list(self._pool.map(self._get_wrapper(), pts))
+        results = list(self._pool.map(self._get_wrapper(), enumerate(pts)))
         lnpost = np.array([r[0] for r in results])
         lnprop = np.array([r[1] for r in results])
 
@@ -869,7 +868,7 @@ class Sampler(object):
 
         if self._kde is not None:
             if self._last_run_mcmc_result is None and (lnpost0 is None or lnprop0 is None):
-                results = list(self._pool.map(self._get_wrapper(), p0))
+                results = list(self._pool.map(self._get_wrapper(), enumerate(p0)))
                 if lnpost0 is None:
                     lnpost0 = np.array([r[0] for r in results])
                 if lnprop0 is None:
